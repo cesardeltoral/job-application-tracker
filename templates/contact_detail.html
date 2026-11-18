@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% from '_macros.html' import delete_button %}
+{% block title %}{{ contact.contact_name }}{% endblock %}
+{% block content %}
+<p class="crumbs"><a href="{{ url_for('contacts') }}">Contacts</a> / {{ contact.contact_name }}</p>
+<div class="page-head">
+  <div>
+    <h1>{{ contact.contact_name }}</h1>
+    <p class="muted">{{ contact.title ~ ' at ' if contact.title else '' }}<a href="{{ url_for('company_detail', company_id=contact.company_id) }}">{{ contact.company_name }}</a></p>
+  </div>
+  <div class="actions">
+    <a class="btn" href="{{ url_for('contact_form', contact_id=contact.contact_id) }}">Edit</a>
+    {{ delete_button(url_for('contact_delete', contact_id=contact.contact_id), contact.contact_name) }}
+  </div>
+</div>
+
+<section class="card">
+  <dl class="details">
+    <dt>Email</dt><dd>{% if contact.email %}<a href="mailto:{{ contact.email }}">{{ contact.email }}</a>{% else %}—{% endif %}</dd>
+    <dt>Phone</dt><dd>{{ contact.phone or '—' }}</dd>
+    <dt>LinkedIn</dt><dd>{% if contact.linkedin_url %}<a href="{{ contact.linkedin_url }}" target="_blank" rel="noopener">{{ contact.linkedin_url }}</a>{% else %}—{% endif %}</dd>
+    <dt>Notes</dt><dd class="prewrap">{{ contact.notes or '—' }}</dd>
+  </dl>
+</section>
+{% endblock %}

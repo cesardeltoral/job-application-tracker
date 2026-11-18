@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% from '_macros.html' import search_bar, delete_button, empty %}
+{% block title %}Contacts{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div><h1>Contacts</h1><p class="muted">{{ contacts|length }} contact{{ 's' if contacts|length != 1 }}</p></div>
+  <a class="btn btn-primary" href="{{ url_for('contact_form') }}">+ Add contact</a>
+</div>
+
+{{ search_bar(url_for('contacts'), search, 'Search by name, title or company') }}
+
+{% if contacts %}
+<div class="table-wrap">
+  <table class="table">
+    <thead><tr><th>Name</th><th>Company</th><th>Email</th><th>Phone</th><th>LinkedIn</th><th></th></tr></thead>
+    <tbody>
+      {% for k in contacts %}
+        <tr>
+          <td><a href="{{ url_for('contact_detail', contact_id=k.contact_id) }}" class="strong">{{ k.contact_name }}</a>
+              <div class="small muted">{{ k.title or '' }}</div></td>
+          <td><a href="{{ url_for('company_detail', company_id=k.company_id) }}">{{ k.company_name }}</a></td>
+          <td>{% if k.email %}<a href="mailto:{{ k.email }}">{{ k.email }}</a>{% else %}—{% endif %}</td>
+          <td class="nowrap">{{ k.phone or '—' }}</td>
+          <td>{% if k.linkedin_url %}<a href="{{ k.linkedin_url }}" target="_blank" rel="noopener">Profile ↗</a>{% else %}—{% endif %}</td>
+          <td class="row-actions">
+            <a class="btn btn-sm" href="{{ url_for('contact_form', contact_id=k.contact_id) }}">Edit</a>
+            {{ delete_button(url_for('contact_delete', contact_id=k.contact_id), k.contact_name) }}
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+  {{ empty('No contacts found.', url_for('contact_form'), 'Add a contact') }}
+{% endif %}
+{% endblock %}

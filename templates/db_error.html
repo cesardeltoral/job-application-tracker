@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+{% block title %}Database error{% endblock %}
+{% block content %}
+<div class="empty">
+  <h1>Database error</h1>
+  <p>The app couldn't talk to MySQL. Check that the server is running and that the
+     credentials in <code>.env</code> are correct, then make sure <code>schema.sql</code> has been run.</p>
+  <pre class="error-box">{{ error }}</pre>
+  <a class="btn" href="{{ url_for('dashboard') }}">Try again</a>
+</div>
+{% endblock %}

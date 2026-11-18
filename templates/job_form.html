@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% from '_macros.html' import field, select, checkbox %}
+{% block title %}{{ 'Edit' if job_id else 'Add' }} job{% endblock %}
+{% block content %}
+<p class="crumbs"><a href="{{ url_for('jobs') }}">Jobs</a> / {{ 'Edit' if job_id else 'New' }}</p>
+<h1>{{ 'Edit job' if job_id else 'Add a job' }}</h1>
+
+<form method="post" class="card form" novalidate>
+  {% if errors %}<div class="flash flash-error">Please fix the highlighted fields.</div>{% endif %}
+  <h2>Job</h2>
+  <div class="form-grid">
+    {{ select('company_id', 'Company', companies|choices('company_id', 'company_name'),
+              job.get('company_id'), errors, required=true, blank='Choose a company…') }}
+    {{ field('job_title', 'Job title', job, errors, required=true, attrs='maxlength="100"') }}
+    {{ select('job_type', 'Job type', JOB_TYPES|choices, job.get('job_type') or 'Full-time', errors) }}
+    {{ field('date_posted', 'Date posted', job, errors, type='date') }}
+    {{ field('salary_min', 'Minimum salary ($/yr)', job, errors, type='number', attrs='min="0" step="1000"') }}
+    {{ field('salary_max', 'Maximum salary ($/yr)', job, errors, type='number', attrs='min="0" step="1000"') }}
+    <div class="field-wide">{{ field('job_url', 'Job posting URL', job, errors, type='url', placeholder='https://…', attrs='maxlength="300"') }}</div>
+  </div>
+
+  <h2>Requirements</h2>
+  <p class="muted small">Saved to the <code>requirements</code> JSON column. Required skills drive the Job Match feature.</p>
+  <div class="form-grid">
+    <div class="field-wide">{{ field('required_skills', 'Required skills', job, errors, placeholder='Python, SQL, Flask', hint='Separate skills with commas.') }}</div>
+    <div class="field-wide">{{ field('preferred_skills', 'Preferred skills', job, errors, placeholder='Docker, AWS') }}</div>
+    {{ field('education', 'Education', job, errors, placeholder='Bachelor in CS', attrs='maxlength="100"') }}
+    {{ field('experience_years', 'Years of experience', job, errors, type='number', attrs='min="0" max="50"') }}
+    {{ checkbox('remote_option', 'Remote work allowed', job.get('remote_option')) }}
+  </div>
+
+  <div class="form-actions">
+    <button class="btn btn-primary" type="submit">{{ 'Save changes' if job_id else 'Add job' }}</button>
+    <a class="btn btn-ghost" href="{{ url_for('job_detail', job_id=job_id) if job_id else url_for('jobs') }}">Cancel</a>
+  </div>
+</form>
+{% endblock %}

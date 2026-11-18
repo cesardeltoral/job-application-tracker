@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+{% from '_macros.html' import delete_button, status_badge, skill_chips %}
+{% set iv = app_row.interview_data %}
+{% block title %}Application · {{ app_row.job_title }}{% endblock %}
+{% block content %}
+<p class="crumbs"><a href="{{ url_for('applications') }}">Applications</a> / #{{ app_row.application_id }}</p>
+<div class="page-head">
+  <div>
+    <h1>{{ app_row.job_title }} {{ status_badge(app_row.status) }}</h1>
+    <p class="muted">at <a href="{{ url_for('company_detail', company_id=app_row.company_id) }}">{{ app_row.company_name }}</a>
+       · applied {{ app_row.application_date|datefmt }}</p>
+  </div>
+  <div class="actions">
+    <a class="btn" href="{{ url_for('application_form', application_id=app_row.application_id) }}">Edit</a>
+    {{ delete_button(url_for('application_delete', application_id=app_row.application_id), 'this application') }}
+  </div>
+</div>
+
+<div class="grid-2">
+  <section class="card">
+    <h2>Application</h2>
+    <dl class="details">
+      <dt>Job</dt><dd><a href="{{ url_for('job_detail', job_id=app_row.job_id) }}">{{ app_row.job_title }}</a> <span class="tag">{{ app_row.job_type }}</span></dd>
+      <dt>Resume version</dt><dd>{{ app_row.resume_version or '—' }}</dd>
+      <dt>Cover letter</dt><dd>{{ 'Sent' if app_row.cover_letter_sent else 'Not sent' }}</dd>
+    </dl>
+  </section>
+
+  <section class="card">
+    <h2>Interview details <span class="muted small">(JSON column)</span></h2>
+    {% if iv %}
+      <dl class="details">
+        <dt>Rounds</dt><dd>{{ iv.get('interview_rounds', '—') }}</dd>
+        <dt>Interviewers</dt><dd>{{ skill_chips(iv.get('interviewers', []), 'chip-soft') or '—' }}</dd>
+        <dt>Questions asked</dt>
+        <dd>{% if iv.get('technical_questions') %}<ul class="plain">{% for q in iv.technical_questions %}<li>{{ q }}</li>{% endfor %}</ul>{% else %}—{% endif %}</dd>
+        <dt>Feedback</dt><dd class="prewrap">{{ iv.get('feedback') or '—' }}</dd>
+        <dt>Next steps</dt><dd>{{ iv.get('next_steps') or '—' }}</dd>
+        <dt>Rating</dt><dd>{% if iv.get('rating') %}<span class="stars" aria-label="{{ iv.rating }} out of 5">{{ '★' * iv.rating }}{{ '☆' * (5 - iv.rating) }}</span>{% else %}—{% endif %}</dd>
+      </dl>
+    {% else %}
+      <p class="muted">No interview details yet. <a href="{{ url_for('application_form', application_id=app_row.application_id) }}">Add them</a>.</p>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}

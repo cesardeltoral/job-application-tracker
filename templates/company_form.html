@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% from '_macros.html' import field, textarea %}
+{% set editing = company.get('company_id') %}
+{% block title %}{{ 'Edit' if editing else 'Add' }} company{% endblock %}
+{% block content %}
+<p class="crumbs"><a href="{{ url_for('companies') }}">Companies</a> / {{ 'Edit' if editing else 'New' }}</p>
+<h1>{{ 'Edit ' ~ company.company_name if editing else 'Add a company' }}</h1>
+
+<form method="post" class="card form" novalidate>
+  {% if errors %}<div class="flash flash-error">Please fix the highlighted fields.</div>{% endif %}
+  <div class="form-grid">
+    {{ field('company_name', 'Company name', company, errors, required=true, attrs='maxlength="100"') }}
+    {{ field('industry', 'Industry', company, errors, placeholder='Software, Finance…', attrs='maxlength="50"') }}
+    {{ field('website', 'Website', company, errors, type='url', placeholder='https://example.com', attrs='maxlength="200"') }}
+    {{ field('city', 'City', company, errors, attrs='maxlength="50"') }}
+    {{ field('state', 'State', company, errors, attrs='maxlength="50"') }}
+    {{ textarea('notes', 'Notes', company, errors, rows=4) }}
+  </div>
+  <div class="form-actions">
+    <button class="btn btn-primary" type="submit">{{ 'Save changes' if editing else 'Add company' }}</button>
+    <a class="btn btn-ghost" href="{{ url_for('company_detail', company_id=company.company_id) if editing else url_for('companies') }}">Cancel</a>
+  </div>
+</form>
+{% endblock %}

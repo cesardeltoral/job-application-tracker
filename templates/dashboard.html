@@ -1,0 +1,117 @@
+{% extends 'base.html' %}
+{% from '_macros.html' import status_badge %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Dashboard</h1>
+    <p class="muted">Your job search at a glance.</p>
+  </div>
+  <div class="actions">
+    <a class="btn btn-primary" href="{{ url_for('application_form') }}">+ Log application</a>
+    <a class="btn" href="{{ url_for('job_match') }}">Find matching jobs</a>
+  </div>
+</div>
+
+<section class="stat-grid">
+  <a class="stat" href="{{ url_for('applications') }}">
+    <span class="stat-label">Applications</span>
+    <span class="stat-value">{{ stats.counts.applications }}</span>
+    <span class="stat-sub">{{ stats.active }} still in progress</span>
+  </a>
+  <a class="stat" href="{{ url_for('applications', status='Interview') }}">
+    <span class="stat-label">Interviews</span>
+    <span class="stat-value">{{ stats.by_status.Interview }}</span>
+    <span class="stat-sub">{{ stats.by_status.Offer }} offer{{ 's' if stats.by_status.Offer != 1 }}</span>
+  </a>
+  <div class="stat">
+    <span class="stat-label">Response rate</span>
+    <span class="stat-value">{{ stats.response_rate }}%</span>
+    <span class="stat-sub">Applications that got any reply</span>
+  </div>
+  <a class="stat" href="{{ url_for('jobs') }}">
+    <span class="stat-label">Jobs tracked</span>
+    <span class="stat-value">{{ stats.counts.jobs }}</span>
+    <span class="stat-sub">at {{ stats.counts.companies }} companies · {{ stats.counts.contacts }} contacts</span>
+  </a>
+</section>
+
+<div class="grid-2">
+  <section class="card">
+    <h2>Applications by status</h2>
+    {% set max_count = stats.by_status.values()|max %}
+    <ul class="bars">
+      {% for status, count in stats.by_status.items() %}
+        <li>
+          <a href="{{ url_for('applications', status=status) }}" class="bar-label">{{ status }}</a>
+          <span class="bar-track">
+            <span class="bar-fill bar-{{ status|lower }}"
+                  style="width: {{ (100 * count / max_count) if max_count else 0 }}%"></span>
+          </span>
+          <span class="bar-count">{{ count }}</span>
+        </li>
+      {% endfor %}
+    </ul>
+  </section>
+
+  <section class="card">
+    <h2>Most requested skills</h2>
+    <p class="muted small">Counted from every job's <code>requirements.required_skills</code> JSON array.</p>
+    {% if stats.top_skills %}
+      {% set top = stats.top_skills[0].total %}
+      <ul class="bars">
+        {% for row in stats.top_skills %}
+          <li>
+            <span class="bar-label">{{ row.skill }}</span>
+            <span class="bar-track"><span class="bar-fill bar-skill" style="width: {{ 100 * row.total / top }}%"></span></span>
+            <span class="bar-count">{{ row.total }}</span>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="muted">Add required skills to your jobs to see this chart.</p>
+    {% endif %}
+  </section>
+</div>
+
+<div class="grid-2">
+  <section class="card">
+    <div class="card-head">
+      <h2>Recent applications</h2>
+      <a href="{{ url_for('applications') }}" class="small">View all →</a>
+    </div>
+    {% if stats.recent %}
+      <table class="table compact">
+        <tbody>
+          {% for a in stats.recent %}
+            <tr>
+              <td><a href="{{ url_for('application_detail', application_id=a.application_id) }}">{{ a.job_title }}</a>
+                  <div class="muted small">{{ a.company_name }}</div></td>
+              <td class="nowrap muted small">{{ a.application_date|datefmt }}</td>
+              <td>{{ status_badge(a.status) }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p class="muted">No applications yet.</p>
+    {% endif %}
+  </section>
+
+  <section class="card">
+    <h2>Next steps</h2>
+    {% if stats.upcoming %}
+      <ul class="todo">
+        {% for u in stats.upcoming %}
+          <li>
+            <a href="{{ url_for('application_detail', application_id=u.application_id) }}">{{ u.job_title }} · {{ u.company_name }}</a>
+            <div>{{ u.next_steps }}</div>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="muted">Nothing scheduled. Add "next steps" to an application's interview details.</p>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}

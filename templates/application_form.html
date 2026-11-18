@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% from '_macros.html' import field, select, checkbox, textarea %}
+{% block title %}{{ 'Edit' if application_id else 'Log' }} application{% endblock %}
+{% block content %}
+<p class="crumbs"><a href="{{ url_for('applications') }}">Applications</a> / {{ 'Edit' if application_id else 'New' }}</p>
+<h1>{{ 'Edit application' if application_id else 'Log an application' }}</h1>
+
+{% set job_options = [] %}
+{% for j in jobs %}{% set _ = job_options.append((j.job_id, j.job_title ~ ' — ' ~ j.company_name)) %}{% endfor %}
+
+<form method="post" class="card form" novalidate>
+  {% if errors %}<div class="flash flash-error">Please fix the highlighted fields.</div>{% endif %}
+  <h2>Application</h2>
+  <div class="form-grid">
+    <div class="field-wide">{{ select('job_id', 'Job', job_options, values.get('job_id'), errors, required=true, blank='Choose a job…') }}</div>
+    {{ field('application_date', 'Application date', values, errors, type='date', required=true) }}
+    {{ select('status', 'Status', STATUSES|choices, values.get('status') or 'Applied', errors) }}
+    {{ field('resume_version', 'Resume version', values, errors, placeholder='v2-software', attrs='maxlength="50"') }}
+    {{ checkbox('cover_letter_sent', 'Cover letter sent', values.get('cover_letter_sent')) }}
+  </div>
+
+  <h2>Interview details <span class="muted small">(optional)</span></h2>
+  <p class="muted small">Saved to the <code>interview_data</code> JSON column. Empty fields are left out.</p>
+  <div class="form-grid">
+    {{ field('interview_rounds', 'Interview rounds', values, errors, type='number', attrs='min="0" max="20"') }}
+    {{ select('rating', 'How did it go? (1–5)', [(1,'1 – Poor'),(2,'2'),(3,'3 – OK'),(4,'4'),(5,'5 – Great')], values.get('rating'), errors, blank='—') }}
+    <div class="field-wide">{{ field('interviewers', 'Interviewers', values, errors, placeholder='Sarah Johnson, Mike Chen', hint='Separate names with commas.') }}</div>
+    {{ textarea('technical_questions', 'Questions asked', values, errors, rows=3, hint='One question per line.') }}
+    {{ textarea('feedback', 'Feedback', values, errors, rows=3) }}
+    <div class="field-wide">{{ field('next_steps', 'Next steps', values, errors, placeholder='Final round on Friday', attrs='maxlength="300"') }}</div>
+  </div>
+
+  <div class="form-actions">
+    <button class="btn btn-primary" type="submit">{{ 'Save changes' if application_id else 'Log application' }}</button>
+    <a class="btn btn-ghost" href="{{ url_for('application_detail', application_id=application_id) if application_id else url_for('applications') }}">Cancel</a>
+  </div>
+</form>
+{% endblock %}

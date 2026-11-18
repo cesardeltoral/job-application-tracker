@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+{% from '_macros.html' import search_bar, delete_button, empty, skill_chips %}
+{% block title %}Jobs{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div><h1>Jobs</h1><p class="muted">{{ jobs|length }} job{{ 's' if jobs|length != 1 }}</p></div>
+  <a class="btn btn-primary" href="{{ url_for('job_form') }}">+ Add job</a>
+</div>
+
+{% call search_bar(url_for('jobs'), search, 'Search by title or company') %}
+  <select name="type" aria-label="Job type">
+    <option value="">All types</option>
+    {% for t in JOB_TYPES %}<option {{ 'selected' if t == job_type }}>{{ t }}</option>{% endfor %}
+  </select>
+{% endcall %}
+
+{% if jobs %}
+<div class="table-wrap">
+  <table class="table">
+    <thead><tr><th>Job</th><th>Type</th><th>Salary</th><th>Required skills</th><th>Posted</th><th></th></tr></thead>
+    <tbody>
+      {% for j in jobs %}
+        <tr>
+          <td><a href="{{ url_for('job_detail', job_id=j.job_id) }}" class="strong">{{ j.job_title }}</a>
+              <div class="small muted">{{ j.company_name }}{% if j.requirements.remote_option %} · Remote OK{% endif %}</div></td>
+          <td><span class="tag">{{ j.job_type }}</span></td>
+          <td class="nowrap">{{ j.salary_min|money }} – {{ j.salary_max|money }}</td>
+          <td>{{ skill_chips(j.requirements.get('required_skills', [])) }}</td>
+          <td class="nowrap muted small">{{ j.date_posted|datefmt }}</td>
+          <td class="row-actions">
+            <a class="btn btn-sm" href="{{ url_for('job_form', job_id=j.job_id) }}">Edit</a>
+            {{ delete_button(url_for('job_delete', job_id=j.job_id), j.job_title ~ ' at ' ~ j.company_name,
+                             'Applications for this job will also be deleted.') }}
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+  {{ empty('No jobs found.', url_for('job_form'), 'Add a job') }}
+{% endif %}
+{% endblock %}

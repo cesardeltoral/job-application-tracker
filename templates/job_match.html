@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+{% from '_macros.html' import skill_chips, empty %}
+{% block title %}Job Match{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Job Match</h1>
+    <p class="muted">Enter your skills to rank every job by how many of its <strong>required</strong> skills you have.</p>
+  </div>
+</div>
+
+<form method="get" class="card form match-form">
+  <div class="form-grid">
+    <div class="field field-wide">
+      <label for="skills">Your skills</label>
+      <input id="skills" name="skills" value="{{ skills_text }}" placeholder="Python, SQL, Flask" autofocus>
+      <p class="hint">Separate skills with commas. Matching ignores case and understands a few aliases (JS = JavaScript, Postgres = PostgreSQL).</p>
+    </div>
+    <div class="field">
+      <label for="min">Show jobs matching at least</label>
+      <select id="min" name="min">
+        {% for p in [0, 25, 50, 75, 100] %}<option value="{{ p }}" {{ 'selected' if p == min_percent }}>{{ p }}%</option>{% endfor %}
+      </select>
+    </div>
+  </div>
+  <div class="form-actions"><button class="btn btn-primary" type="submit">Find matches</button></div>
+</form>
+
+{% if skills %}
+  <p class="match-summary"><strong>Your skills:</strong> {{ skill_chips(skills) }}</p>
+  {% if results %}
+    <h2>Matching jobs ({{ results|length }})</h2>
+    <ol class="matches">
+      {% for r in results %}
+        {% set level = 'high' if r.percent >= 75 else ('mid' if r.percent >= 40 else 'low') %}
+        <li class="match match-{{ level }}">
+          <div class="match-rank">{{ loop.index }}</div>
+          <div class="match-body">
+            <div class="match-title">
+              <a href="{{ url_for('job_detail', job_id=r.job.job_id) }}" class="strong">{{ r.job.job_title }}</a>
+              <span class="muted">at {{ r.job.company_name }}</span>
+              <span class="tag">{{ r.job.job_type }}</span>
+            </div>
+            <div class="meter" role="img" aria-label="{{ r.percent }} percent match">
+              <span style="width: {{ r.percent }}%"></span>
+            </div>
+            <div class="match-skills">
+              {% if r.matched %}<div><span class="label">Have:</span> {{ skill_chips(r.matched, 'chip-ok') }}</div>{% endif %}
+              {% if r.missing %}<div><span class="label">Missing:</span> {{ skill_chips(r.missing, 'chip-miss') }}</div>{% endif %}
+              {% if r.preferred_matched %}<div><span class="label">Bonus:</span> {{ skill_chips(r.preferred_matched, 'chip-soft') }} <span class="muted small">(preferred skills you have)</span></div>{% endif %}
+            </div>
+          </div>
+          <div class="match-score">
+            <span class="pct">{{ r.percent }}%</span>
+            <span class="muted small">{{ r.matched|length }}/{{ r.required_count }} skills</span>
+          </div>
+        </li>
+      {% endfor %}
+    </ol>
+  {% else %}
+    {{ empty('No jobs meet that match threshold. Try lowering the minimum or adding more skills.') }}
+  {% endif %}
+{% elif submitted %}
+  <p class="muted">Enter at least one skill to see matches.</p>
+{% endif %}
+{% endblock %}

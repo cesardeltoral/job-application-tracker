@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% from '_macros.html' import field, select, textarea %}
+{% block title %}{{ 'Edit' if contact_id else 'Add' }} contact{% endblock %}
+{% block content %}
+<p class="crumbs"><a href="{{ url_for('contacts') }}">Contacts</a> / {{ 'Edit' if contact_id else 'New' }}</p>
+<h1>{{ 'Edit contact' if contact_id else 'Add a contact' }}</h1>
+
+<form method="post" class="card form" novalidate>
+  {% if errors %}<div class="flash flash-error">Please fix the highlighted fields.</div>{% endif %}
+  <div class="form-grid">
+    {{ field('contact_name', 'Name', contact, errors, required=true, attrs='maxlength="100"') }}
+    {{ select('company_id', 'Company', companies|choices('company_id', 'company_name'), contact.get('company_id'), errors, required=true, blank='Choose a company…') }}
+    {{ field('title', 'Job title', contact, errors, placeholder='Recruiter', attrs='maxlength="100"') }}
+    {{ field('email', 'Email', contact, errors, type='email', attrs='maxlength="100"') }}
+    {{ field('phone', 'Phone', contact, errors, type='tel', placeholder='305-555-0100', attrs='maxlength="20"') }}
+    {{ field('linkedin_url', 'LinkedIn URL', contact, errors, type='url', placeholder='https://www.linkedin.com/in/…', attrs='maxlength="200"') }}
+    {{ textarea('notes', 'Notes', contact, errors, rows=4) }}
+  </div>
+  <div class="form-actions">
+    <button class="btn btn-primary" type="submit">{{ 'Save changes' if contact_id else 'Add contact' }}</button>
+    <a class="btn btn-ghost" href="{{ url_for('contact_detail', contact_id=contact_id) if contact_id else url_for('contacts') }}">Cancel</a>
+  </div>
+</form>
+{% endblock %}

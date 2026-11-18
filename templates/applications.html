@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% from '_macros.html' import search_bar, delete_button, empty, status_badge %}
+{% block title %}Applications{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div><h1>Applications</h1><p class="muted">{{ applications|length }} application{{ 's' if applications|length != 1 }}{{ ' · ' ~ status if status }}</p></div>
+  <a class="btn btn-primary" href="{{ url_for('application_form') }}">+ Log application</a>
+</div>
+
+<nav class="tabs" aria-label="Filter by status">
+  <a href="{{ url_for('applications', q=search or None) }}" class="{{ 'active' if not status }}">All</a>
+  {% for s in STATUSES %}
+    <a href="{{ url_for('applications', status=s, q=search or None) }}" class="{{ 'active' if s == status }}">{{ s }}</a>
+  {% endfor %}
+</nav>
+
+{% call search_bar(url_for('applications'), search, 'Search by job title or company') %}
+  {% if status %}<input type="hidden" name="status" value="{{ status }}">{% endif %}
+{% endcall %}
+
+{% if applications %}
+<div class="table-wrap">
+  <table class="table">
+    <thead><tr><th>Job</th><th>Applied</th><th>Status</th><th>Resume</th><th>Cover letter</th><th>Interviews</th><th></th></tr></thead>
+    <tbody>
+      {% for a in applications %}
+        <tr>
+          <td><a href="{{ url_for('application_detail', application_id=a.application_id) }}" class="strong">{{ a.job_title }}</a>
+              <div class="small muted">{{ a.company_name }}</div></td>
+          <td class="nowrap">{{ a.application_date|datefmt }}</td>
+          <td>{{ status_badge(a.status) }}</td>
+          <td>{{ a.resume_version or '—' }}</td>
+          <td>{{ '✓' if a.cover_letter_sent else '—' }}</td>
+          <td>{{ a.interview_data.get('interview_rounds', '—') }}</td>
+          <td class="row-actions">
+            <a class="btn btn-sm" href="{{ url_for('application_form', application_id=a.application_id) }}">Edit</a>
+            {{ delete_button(url_for('application_delete', application_id=a.application_id),
+                             'the application for ' ~ a.job_title ~ ' at ' ~ a.company_name) }}
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+  {{ empty('No applications found.', url_for('application_form'), 'Log an application') }}
+{% endif %}
+{% endblock %}
