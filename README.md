@@ -4,7 +4,8 @@ A full-stack web app for tracking a job search: the companies you're targeting, 
 
 **Stack:** MySQL 8 · Python 3 · Flask · HTML/CSS (no CSS framework)
 
-> 📹 **Demo video:** [`demo.mp4`](demo.mp4) (3–7 minute walkthrough of the client, server and database)
+> 📹 **Demo video (5 min):** [Watch on Google Drive](https://drive.google.com/file/d/1czestcDvQve8MQxw6_5Ls22-Q2KW2Z_y/view?usp=sharing)
+> Walkthrough of the database, the Flask server and the client. The same video is in this repo as [`demo.mp4`](demo.mp4).
 
 ## Features
 
